@@ -1,0 +1,14 @@
+{
+  "name": "my-room-3d",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive room reconstruction with Three.js, TSL and WebGL2",
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "preview": "python3 -m http.server 8080 --bind 127.0.0.1"
+  },
+  "dependencies": {
+    "esbuild": "0.25.10",
+    "three": "0.180.0"
+  }
+}
