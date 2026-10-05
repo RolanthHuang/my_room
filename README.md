@@ -2,6 +2,8 @@
 
 以 Three.js、TSL 與 WebGL2 製作的可互動房間模型，可旋轉、縮放及第一人稱走動。
 
+**[直接進入 3D 房間 →](https://rolanthhuang.github.io/my_room/)**
+
 ![房間俯視預覽](assets/overview.jpg)
 
 ## 操作
