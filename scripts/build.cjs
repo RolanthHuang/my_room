@@ -12,11 +12,12 @@ const root = path.resolve(__dirname, '..');
     format: 'iife',
     target: 'es2020',
     minify: true,
+    loader: { '.jpg': 'dataurl' },
   });
   const license = fs.readFileSync(path.join(root, 'licenses/three-MIT.txt'), 'utf8');
   const script = result.outputFiles[0].text.replace(/<\/script/gi, '<\\/script');
   const template = fs.readFileSync(path.join(root, 'src/template.html'), 'utf8');
-  const html = template.replace('/*ROOM_BUNDLE*/', script + '\n/* Three.js license\n' + license + '*/');
+  const html = template.replace('/*ROOM_BUNDLE*/', () => script + '\n/* Three.js license\n' + license + '*/');
   fs.writeFileSync(path.join(root, 'index.html'), html);
   console.log('Built index.html: ' + Buffer.byteLength(html) + ' bytes');
 })().catch(error => {

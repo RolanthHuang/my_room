@@ -1,0 +1,52 @@
+[
+  {
+    "id": "linen-green",
+    "name": "亞麻綠",
+    "photoMean": "#4d5038"
+  },
+  {
+    "id": "linen-gray",
+    "name": "亞麻灰",
+    "photoMean": "#5d5d57"
+  },
+  {
+    "id": "tundra-green",
+    "name": "苔原綠",
+    "photoMean": "#9a9876"
+  },
+  {
+    "id": "wheat-brown",
+    "name": "麥田棕",
+    "photoMean": "#9b7844"
+  },
+  {
+    "id": "cloud-beige",
+    "name": "雲朵米",
+    "photoMean": "#cfc4a5"
+  },
+  {
+    "id": "plain-yellow",
+    "name": "平紋黃",
+    "photoMean": "#c5963f"
+  },
+  {
+    "id": "photo-navy",
+    "name": "深藍（照片）",
+    "photoMean": "#253852"
+  },
+  {
+    "id": "photo-olive",
+    "name": "橄欖綠（照片）",
+    "photoMean": "#7e8359"
+  },
+  {
+    "id": "photo-light-gray",
+    "name": "淺灰織紋（照片）",
+    "photoMean": "#aaaaaf"
+  },
+  {
+    "id": "photo-ivory",
+    "name": "米白織紋（照片）",
+    "photoMean": "#d6c4bd"
+  }
+]
