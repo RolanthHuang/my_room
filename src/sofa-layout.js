@@ -3,23 +3,24 @@ import {createSofa, SOFA_SPECS} from './sofas.js';
 import {FABRICS, applyFabric, fabricById, loadFabric} from './fabrics.js';
 import {SOFA_PHOTOS} from './sofa-photos.js';
 import {TABLE_PHOTOS} from './walnut-table.js';
+import {COLUMN_SPEC} from './room-fixtures.js';
 
-export function createSofaLayout(roomWidth,columnProjection=.28){
+export function createSofaLayout(roomWidth,column=COLUMN_SPEC){
   const holder=new THREE.Group();holder.name='兩張沙發擺設';
   const models={two:createSofa('two'),corner:createSofa('corner')};
   const two=models.two,corner=models.corner;
   two.position.set(roomWidth/2-.03-SOFA_SPECS.two.depth/2,0,-1.66);
   two.rotation.y=-Math.PI/2;
   // The corner's open +X/+Z sides face the bed; its backs face the wall and entry.
-  // Keep the former trolley's depth, with space for the coat stand in the door recess.
-  corner.position.set(-roomWidth/2+columnProjection+.20+.03+SOFA_SPECS.corner.depth/2,0,1.83);
+  // The former water trolley was on the TV side of the column, outside the entrance recess.
+  corner.position.set(-roomWidth/2+.03+SOFA_SPECS.corner.depth/2,0,column.z-column.width/2-.04-SOFA_SPECS.corner.width/2);
   corner.rotation.y=Math.PI/2;
   holder.add(two,corner);holder.updateMatrixWorld(true);
   return {holder,models};
 }
 
 export function setupSofaLayout({root,colliders,room}) {
-  const {holder,models}=createSofaLayout(room.width,room.column.projection);root.add(holder);root.updateMatrixWorld(true);
+  const {holder,models}=createSofaLayout(room.width,room.column);root.add(holder);root.updateMatrixWorld(true);
   const geometry={};
   for(const model of Object.values(models)){
     const bounds=new THREE.Box3().setFromObject(model);

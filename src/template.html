@@ -24,7 +24,7 @@
 <div class="bottom"><button id="walkToggle" class="primary" aria-pressed="false">走進房間</button><div class="help" id="help"><strong>拖曳旋轉 · 滾輪縮放</strong><span>右鍵平移；可切換三個觀看視角。</span></div></div>
 <div class="crosshair" id="crosshair" hidden></div>
 <div class="touch-pad" id="touchPad" hidden aria-label="第一人稱移動"><button class="forward" data-move="forward" aria-label="向前">↑</button><button class="left" data-move="left" aria-label="向左">←</button><button class="back" data-move="back" aria-label="向後">↓</button><button class="right" data-move="right" aria-label="向右">→</button></div>
-<aside class="drawer" id="drawer" hidden><h2>房間尺寸與比例</h2><h3>實際量測</h3><div class="measure"><span>床墊長 × 寬</span><span>188 × 152 cm</span></div><div class="measure"><span>床墊厚度／基座高</span><span>34／25 cm</span></div><div class="measure"><span>床面總高</span><span>59 cm</span></div><div class="measure"><span>窗至浴室門方向</span><span>618 cm</span></div><div class="measure"><span>原窗框至床邊</span><span>195 cm</span></div><div class="measure"><span>圓邊桌直徑 × 高</span><span>50 × 50 cm</span></div><h3>照片估計</h3><div class="measure"><span>房間寬度</span><span>約 425 cm</span></div><div class="measure"><span>天花板高度</span><span>約 265 cm</span></div><p>門窗、窗簾、書桌、衣櫃、牆柱與未量測間距仍依照片估計。家具外尺寸依產品規格；購買前請再實量現場。</p><h3>畫面亮度</h3><label class="range-label" for="exposure">曝光 <output id="exposureValue">1.20</output></label><input id="exposure" type="range" min="0.7" max="1.8" step="0.05" value="1.2"></aside>
+<aside class="drawer" id="drawer" hidden><h2>房間尺寸與比例</h2><h3>實際量測</h3><div class="measure"><span>床墊長 × 寬</span><span>188 × 152 cm</span></div><div class="measure"><span>床墊厚度／基座高</span><span>34／25 cm</span></div><div class="measure"><span>床面總高</span><span>59 cm</span></div><div class="measure"><span>窗至浴室門方向</span><span>618 cm</span></div><div class="measure"><span>原窗框至床邊</span><span>195 cm</span></div><div class="measure"><span>圓邊桌直徑 × 高</span><span>50 × 50 cm</span></div><h3>照片估計</h3><div class="measure"><span>房間寬度</span><span>約 425 cm</span></div><div class="measure"><span>天花板高度</span><span>約 265 cm</span></div><p>門窗、窗簾、書桌、衣櫃、牆柱與未量測間距仍依照片估計。家具外尺寸依產品規格；購買前請再實量現場。</p><h3>面積試算</h3><div class="measure"><span>主房間 425 × 618 cm</span><span id="mainArea"></span></div><div class="measure"><span>廁所（另外估計）</span><span>約 1 坪</span></div><div class="measure"><span>合計</span><span id="totalArea"></span></div><p>618 cm 已確認為實量，房寬 425 cm 為照片估計；以上主房間以矩形外框計算，兩根柱子約占 0.12 坪。總坪數已達你提出的至少 8.1～8.3 坪，實際面積仍需確認房寬。</p><h3>畫面亮度</h3><label class="range-label" for="exposure">曝光 <output id="exposureValue">1.20</output></label><input id="exposure" type="range" min="0.7" max="1.8" step="0.05" value="1.2"></aside>
 <div class="loader" id="loader"><div class="spinner"></div><span id="loadStatus">正在準備房間與家具…</span></div><div class="toast" id="toast" role="status" hidden></div><output id="diagnostic" hidden></output>
 </main>
 <aside class="sidebar" aria-label="家具選擇">
@@ -32,16 +32,16 @@
 <h3>兩人座 · 原沙發位置</h3>
 <div class="measure"><span>寬 × 深 × 高</span><span>192 × 99 × 77 cm</span></div>
 <p class="details">窗邊靠牆，面向電視。</p>
-<h3>轉角單人 · 原推車位置</h3>
+<h3>轉角單人 · 柱子靠電視側</h3>
 <div class="measure"><span>寬 × 深 × 高</span><span>95 × 95 × 77 cm</span></div>
-<p class="details">座位朝向床，放在衣帽架前方，兩面靠背朝向牆側與入口側。</p>
+<p class="details">放在柱子靠電視的一側，座位朝向床。</p>
 <div class="fabric-heading"><span>兩張沙發布色</span><output id="fabricValue">亞麻灰</output></div><div class="fabric-picker" id="fabricPicker" aria-label="選擇布料顏色"></div>
 <h3>胡桃木圓邊桌・小</h3>
 <div class="measure"><span>寬 × 深 × 高</span><span>50 × 50 × 50 cm</span></div>
 <p class="details">依照片重建圓弧桌緣、胡桃木木紋與樹形桌腳，固定放在原茶幾中心。</p>
-<h3>床邊三層木架</h3>
-<p class="details">沿用原三層架模型，放在床邊當桌子。原專案尺寸為照片估計比例，尚未實量。</p>
-<p class="note">門旁衣帽架與左右對稱牆柱依新照片重建；牆柱位於房東小桌子後方，衣帽架放門旁凹位，柱邊到門框約 1 公尺；尺寸仍為照片估計。</p>
+<h3>三層木架 · 照片原位</h3>
+<p class="details">沿用原三層架模型，放回照片中電視前、靠牆的位置。原專案尺寸為照片估計比例，尚未實量。</p>
+<p class="note">門旁衣帽架與左右對稱牆柱依新照片重建；房東小桌子稍偏向衣櫥，柱側與衣櫥留約 30 公分縫隙。衣帽架在門旁凹位，柱邊到門框約 1 公尺；尺寸仍為照片估計。</p>
 <p class="note">外尺寸採 DM 1:1；靠背曲線、車縫、布色與腳座依照片還原。轉角款的 DM 未另列座高，模型暫採同系列 44 cm。房間未實測部分仍為估計。布色會受拍照與螢幕影響，請以實物色卡為準；未能核對正式色名的布料使用照片色名。</p>
 <details class="references"><summary>照片與規格</summary><div class="photos" id="referencePhotos"></div></details>
 </aside></div>

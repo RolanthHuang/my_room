@@ -60,12 +60,11 @@ for(const [id,model] of Object.entries(layout.models)){
  placements[id]={position:model.position.toArray(),size:size.toArray(),visible:model.visible};
 }
 assert.ok(Math.abs(layout.models.two.position.x-1.6)<1e-6&&Math.abs(layout.models.two.position.z+1.66)<1e-6,'two-seater must retain its original location');
-assert.equal(layout.models.corner.position.z,1.83,'corner sofa must replace the trolley location');
-assert.ok(new THREE.Box3().setFromObject(layout.models.corner).min.x>=-2.125+.28+.029,'corner sofa must clear the wall column');
-const opening=new THREE.Vector3(1,0,1).normalize().applyQuaternion(layout.models.corner.quaternion);
+
+const opening=new THREE.Vector3(0,0,1).applyQuaternion(layout.models.corner.quaternion);
 const toBed=new THREE.Vector3(1.105,0,.035).sub(layout.models.corner.position).normalize();
 const facingBed=opening.dot(toBed);
-assert.ok(facingBed>.95,'the corner sofa opening must face the bed');
+assert.ok(facingBed>.95,'the front of the corner sofa must face the bed');
 fs.unlinkSync(layoutBundle);
 const fixturesBundle=path.join(os.tmpdir(),'my-room-fixtures-'+crypto.randomUUID()+'.cjs');
 esbuild.buildSync({entryPoints:[path.join(root,'src/room-fixtures.js')],bundle:true,platform:'node',format:'cjs',outfile:fixturesBundle});
@@ -73,10 +72,12 @@ const {createWallColumns,createCoatStand,COLUMN_SPEC}=require(fixturesBundle);
 const testMaterial=new THREE.MeshStandardMaterial(),testMats={wall:testMaterial,gray:testMaterial,trim:testMaterial,grout:testMaterial,wood:testMaterial};
 const fixtures=createWallColumns(4.25,2.65,testMats);
 const columnBounds=Object.fromEntries(Object.entries(fixtures.columns).map(([id,c])=>[id,new THREE.Box3().setFromObject(c.body)]));
+const cornerBounds=new THREE.Box3().setFromObject(layout.models.corner);
+assert.ok(cornerBounds.max.z<columnBounds.tv.min.z-.03,'corner sofa must be entirely on the TV side of the column');
 const leftCenter=columnBounds.tv.getCenter(new THREE.Vector3()),rightCenter=columnBounds.desk.getCenter(new THREE.Vector3());
 assert.ok(Math.abs(leftCenter.x+rightCenter.x)<1e-6&&Math.abs(leftCenter.z-rightCenter.z)<1e-6,'structural columns must be mirrored at the same depth');
 assert.deepEqual(columnBounds.tv.getSize(new THREE.Vector3()).toArray(),columnBounds.desk.getSize(new THREE.Vector3()).toArray(),'both columns must have the same size');
-assert.equal(rightCenter.z,1.225,'right column must be directly behind the existing desk');
+assert.equal(rightCenter.z,1.225,'keep the symmetric structural column line');
 const recessWidth=3.025-.93/2-columnBounds.tv.max.z;
 assert.ok(recessWidth>.97&&recessWidth<1.0,'photo-guided entrance recess should be about one metre');
 const stand=createCoatStand(testMats),standBounds=new THREE.Box3().setFromObject(stand);

@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu';
 
 // The two photos locate both structural piers behind the small desk, mirrored across the room.
-// Width and projection remain photo estimates; their shared Z follows the desk centre.
+// Width and projection remain photo estimates; their shared Z follows the corrected column line; the desk is offset toward the wardrobe.
 export const COLUMN_SPEC={projection:.28,width:.70,z:1.225,measured:false};
 
 function box(parent,name,w,h,d,x,y,z,mat){

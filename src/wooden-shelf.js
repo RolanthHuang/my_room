@@ -10,7 +10,7 @@ export function createWoodenShelf({woodMap:suppliedWoodMap}={}){
   const W = 0.48, D = 0.43, H = 0.96, leg = 0.036;
   const shelfTops = [0.135, 0.545, 0.96];
   const rack = new THREE.Group();
-  rack.name = '床邊三層木架';
+  rack.name = '三層木架';
   rack.userData={...SHELF_SPEC,source:'RolanthHuang/Wooden_3_tier_shelf',photoEstimated:true};
 
   function hash(x, y) {
