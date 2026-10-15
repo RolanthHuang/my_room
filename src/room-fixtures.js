@@ -2,7 +2,7 @@ import * as THREE from 'three/webgpu';
 
 // The two photos locate both structural piers behind the small desk, mirrored across the room.
 // Width and projection remain photo estimates; their shared Z follows the desk centre.
-export const COLUMN_SPEC={projection:.28,width:.86,z:1.315,measured:false};
+export const COLUMN_SPEC={projection:.28,width:.70,z:1.225,measured:false};
 
 function box(parent,name,w,h,d,x,y,z,mat){
   const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);mesh.name=name;mesh.position.set(x,y,z);mesh.castShadow=mesh.receiveShadow=true;parent.add(mesh);return mesh;

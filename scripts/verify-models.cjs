@@ -76,8 +76,9 @@ const columnBounds=Object.fromEntries(Object.entries(fixtures.columns).map(([id,
 const leftCenter=columnBounds.tv.getCenter(new THREE.Vector3()),rightCenter=columnBounds.desk.getCenter(new THREE.Vector3());
 assert.ok(Math.abs(leftCenter.x+rightCenter.x)<1e-6&&Math.abs(leftCenter.z-rightCenter.z)<1e-6,'structural columns must be mirrored at the same depth');
 assert.deepEqual(columnBounds.tv.getSize(new THREE.Vector3()).toArray(),columnBounds.desk.getSize(new THREE.Vector3()).toArray(),'both columns must have the same size');
-assert.equal(rightCenter.z,1.315,'right column must be directly behind the existing desk');
-assert.ok(columnBounds.tv.max.z<2.475-.6,'the entrance must retain a recessed coat stand bay');
+assert.equal(rightCenter.z,1.225,'right column must be directly behind the existing desk');
+const recessWidth=3.025-.93/2-columnBounds.tv.max.z;
+assert.ok(recessWidth>.97&&recessWidth<1.0,'photo-guided entrance recess should be about one metre');
 const stand=createCoatStand(testMats),standBounds=new THREE.Box3().setFromObject(stand);
 assert.ok(Math.abs(standBounds.min.y)<1e-6&&standBounds.max.y>1.7,'coat stand must stand on the floor');
 const shelfBundle=path.join(os.tmpdir(),'my-room-shelf-'+crypto.randomUUID()+'.cjs');
@@ -89,4 +90,4 @@ assert.equal(shelf.getObjectsByProperty('name','Full-height corner post').length
 assert.equal(shelf.getObjectsByProperty('name','原專案固定腳墊').length,4);
 assert.ok(Math.abs(shelfSize.x-.48)<.005&&Math.abs(shelfSize.z-.43)<.005&&Math.abs(shelfSize.y-.96)<1e-6,'retain original estimated shelf proportions');
 for(const f of [fixturesBundle,shelfBundle])fs.unlinkSync(f);
-console.log(JSON.stringify({passed:true,models:results,table:{widthCm:tableSize.x*100,depthCm:tableSize.z*100,heightCm:tableSize.y*100,position:{x:.95,z:-1.55}},layout:{placements,cornerFacingBed:facingBed},fixtures:{columnSpec:COLUMN_SPEC,columnsSymmetric:true,coatStandHeight:standBounds.max.y,shelf:{size:shelfSize.toArray(),slats:27,measured:false}},simplifiedControls:true},null,2));
+console.log(JSON.stringify({passed:true,models:results,table:{widthCm:tableSize.x*100,depthCm:tableSize.z*100,heightCm:tableSize.y*100,position:{x:.95,z:-1.55}},layout:{placements,cornerFacingBed:facingBed},fixtures:{columnSpec:COLUMN_SPEC,columnsSymmetric:true,entranceRecessWidth:recessWidth,coatStandHeight:standBounds.max.y,shelf:{size:shelfSize.toArray(),slats:27,measured:false}},simplifiedControls:true},null,2));
