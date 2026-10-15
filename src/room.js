@@ -3,9 +3,10 @@ import {texture, uv, float, color, mix, positionLocal, sin} from 'three/tsl';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {setupSofaComparison} from './sofa-comparison.js';
+import {createWalnutTable, TABLE_SPEC} from './walnut-table.js';
 
 // All distances are metres. The bed is measured; room and other furniture are inferred.
-const MODEL={room:{width:4.25,depth:6.18,height:2.65},bed:{length:1.88,width:1.52,baseHeight:.25,mattressHeight:.34,windowGap:1.95,x:1.105,z:.035},coffeeTable:{length:1.20,width:.60,height:.48,x:.95,z:-1.55}};
+const MODEL={room:{width:4.25,depth:6.18,height:2.65},bed:{length:1.88,width:1.52,baseHeight:.25,mattressHeight:.34,windowGap:1.95,x:1.105,z:.035},coffeeTable:{length:TABLE_SPEC.depth,width:TABLE_SPEC.width,height:TABLE_SPEC.height,x:.95,z:-1.55}};
 const canvas=document.getElementById('viewport');
 const loader=document.getElementById('loader');
 const scene=new THREE.Scene();
@@ -159,14 +160,9 @@ function fridge(x,z,w,h,d,hex){const g=new THREE.Group();g.name='單一冰箱';r
   contact(x,z,w+.26,d+.3);obstacle('冰箱',x,z,w,d);return g;}
 fridge(-1.61,-2.31,.57,1.24,.53,'#a5aca6');
 const purifier=new THREE.Group();root.add(purifier);box('空氣清淨機',.25,.64,.20,-1.78,.32,-.27,mats.white,purifier,.025);box('清淨機出風口',.20,.07,.012,-1.78,.58,-.158,mats.gray,purifier,.008);for(let i=0;i<10;i++)box('清淨機格柵',.002,.05,.005,-1.87+i*.02,.58,-.15,mats.white,purifier);contact(-1.78,-.27,.45,.4);obstacle('清淨機',-1.78,-.27,.25,.20);
-// Measured coffee table: 120 cm along the sofa, 60 cm across, wood top and black frame.
-const small=new THREE.Group();small.name='茶幾';root.add(small);const ct=MODEL.coffeeTable;
-box('茶幾桌面',ct.width,.025,ct.length,ct.x,ct.height,ct.z,mats.woodDark,small,.007);
-box('茶幾下層木架',ct.width-.04,.022,ct.length-.035,ct.x,.16,ct.z,mats.woodDark,small,.005);
-for(const x of [ct.x-ct.width/2+.025,ct.x+ct.width/2-.025])for(const z of [ct.z-ct.length/2+.025,ct.z+ct.length/2-.025])box('茶幾黑鐵腳',.025,ct.height-.025,.025,x,(ct.height-.025)/2,z,mats.black,small,.004);
-for(const x of [ct.x-ct.width/2+.015,ct.x+ct.width/2-.015])box('茶幾黑鐵橫框',.025,.035,ct.length-.018,x,ct.height-.034,ct.z,mats.black,small,.003);
-for(let i=0;i<2;i++)cyl('桌上杯子',.025,.065,ct.x-.09,.526,ct.z-.25+i*.13,mats.white,small);
-box('桌上書本',.20,.024,.15,ct.x+.08,ct.height+.025,ct.z+.20,mats.white,small,.003);obstacle('茶幾',ct.x,ct.z,ct.width,ct.length);const tableShadow=contact(ct.x,ct.z,ct.width+.30,ct.length+.30);
+// The 50 cm walnut side table occupies the original coffee table's centre.
+const ct=MODEL.coffeeTable,small=createWalnutTable();small.position.set(ct.x,0,ct.z);root.add(small);
+obstacle('茶幾',ct.x,ct.z,ct.width,ct.length);contact(ct.x,ct.z,ct.width+.20,ct.length+.20);
 // Original trolley provides a recognisable foreground detail.
 const trolley=new THREE.Group();root.add(trolley);const tx=-1.77,tz=1.83;
 for(const x of [tx-.14,tx+.14])lineTube([[x,.15,tz],[x,.17,tz-.14],[x,1.02,tz-.12],[x,1.12,tz-.09]],.012,mats.metal,trolley);
@@ -197,15 +193,15 @@ function lookAngles(){const dir=camera.getWorldDirection(new THREE.Vector3());ya
 function applyAngles(){camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);}
 function isClear(x,z,r=.16){if(x< -W/2+r||x>W/2-r||z< BACK+r||z>FRONT-r)return false;return !colliders.some(c=>x>c.minX-r&&x<c.maxX+r&&z>c.minZ-r&&z<c.maxZ+r);}
 function setMode(next){
-  if(next==='walk'&&comparison?.studio)comparison.setStudio(false,false);
+
   transition=null;held.clear();mode=next;controls.enabled=mode==='orbit';document.getElementById('walkToggle').textContent=mode==='walk'?'返回旋轉觀看':'走進房間';document.getElementById('walkToggle').setAttribute('aria-pressed',mode==='walk');document.getElementById('crosshair').hidden=mode!=='walk';document.getElementById('touchPad').hidden=mode!=='walk';
   document.getElementById('help').innerHTML=mode==='walk'?'<strong>拖曳轉頭 · WASD／方向鍵移動</strong><span>也可使用右側方向按鈕；Esc 返回旋轉觀看。</span>':'<strong>拖曳旋轉 · 滾輪縮放</strong><span>右鍵拖曳平移；雙指縮放及平移。</span>';
   if(mode==='walk'){
     if(!isClear(camera.position.x,camera.position.z)){camera.position.set(-.72,1.62,1.80);camera.lookAt(.5,1.1,-1.5);}camera.position.y=1.62;camera.fov=65;camera.updateProjectionMatrix();lookAngles();applyAngles();toast('可以在家具間的空地移動');
   }else{const dir=camera.getWorldDirection(new THREE.Vector3());controls.target.copy(camera.position).add(dir.multiplyScalar(2));controls.update();}
 }
-function setView(name,instant=false){if(comparison?.studio)comparison.setStudio(false,false);if(mode==='walk')setMode('orbit');const p=presets[name],target=new THREE.Vector3(...p.target),position=new THREE.Vector3(...p.position);if(name==='overview')position.sub(target).multiplyScalar(Math.max(1,.98/camera.aspect)).add(target);document.querySelectorAll('[data-view]').forEach(b=>{b.classList.toggle('active',b.dataset.view===name);b.setAttribute('aria-pressed',b.dataset.view===name);});if(instant){camera.position.copy(position);controls.target.copy(target);camera.fov=p.fov;camera.updateProjectionMatrix();controls.update();return;}transition={start:performance.now(),fromP:camera.position.clone(),fromT:controls.target.clone(),fromF:camera.fov,toP:position,toT:target,toF:p.fov};}
-function updateShell(){if(comparison?.studio)return;const inside=camera.position.x>=-W/2&&camera.position.x<=W/2&&camera.position.z>=BACK&&camera.position.z<=FRONT&&camera.position.y<H;for(const {g,axis,sign} of wallGroups)g.visible=mode==='walk'||inside||camera.position[axis]*sign<(axis==='x'?W/2:(sign>0?FRONT:-BACK));ceiling.visible=mode==='walk'||inside;exterior.visible=backWall.visible;}
+function setView(name,instant=false){if(mode==='walk')setMode('orbit');const p=presets[name],target=new THREE.Vector3(...p.target),position=new THREE.Vector3(...p.position);if(name==='overview')position.sub(target).multiplyScalar(Math.max(1,.98/camera.aspect)).add(target);document.querySelectorAll('[data-view]').forEach(b=>{b.classList.toggle('active',b.dataset.view===name);b.setAttribute('aria-pressed',b.dataset.view===name);});if(instant){camera.position.copy(position);controls.target.copy(target);camera.fov=p.fov;camera.updateProjectionMatrix();controls.update();return;}transition={start:performance.now(),fromP:camera.position.clone(),fromT:controls.target.clone(),fromF:camera.fov,toP:position,toT:target,toF:p.fov};}
+function updateShell(){const inside=camera.position.x>=-W/2&&camera.position.x<=W/2&&camera.position.z>=BACK&&camera.position.z<=FRONT&&camera.position.y<H;for(const {g,axis,sign} of wallGroups)g.visible=mode==='walk'||inside||camera.position[axis]*sign<(axis==='x'?W/2:(sign>0?FRONT:-BACK));ceiling.visible=mode==='walk'||inside;exterior.visible=backWall.visible;}
 function setWarm(on){warm=on;document.getElementById('lightToggle').textContent=on?'切換日光':'切換暖光';document.getElementById('lightToggle').setAttribute('aria-pressed',on);hemi.intensity=on?.60:1.1;hemi.color.set(on?'#d9d7c1':'#d9e7ea');ambient.intensity=on?.42:.35;sun.intensity=on?.35:2.6;sun.color.set(on?'#b8c9d6':'#d5e7ed');ceilingLights.forEach(l=>{l.intensity=on?6.8:1.8;l.color.set(on?'#ffe2ac':'#fff0d4');});scene.background.set(on?'#bcbdb6':'#dcded7');}
 function recordCollision(x,z){const c=colliders.find(c=>x>c.minX-.16&&x<c.maxX+.16&&z>c.minZ-.16&&z<c.maxZ+.16);const name=c?.name||'房間邊界';collisionHits[name]=(collisionHits[name]||0)+1;}
 function handleMovement(dt){const speed=held.has('shift')?1.8:1.12;let f=0,s=0;if(held.has('w')||held.has('arrowup')||held.has('forward'))f+=1;if(held.has('s')||held.has('arrowdown')||held.has('back'))f-=1;if(held.has('d')||held.has('arrowright')||held.has('right'))s+=1;if(held.has('a')||held.has('arrowleft')||held.has('left'))s-=1;if(!f&&!s)return;const scale=speed*dt/Math.max(1,Math.hypot(f,s));const dx=(-Math.sin(yaw)*f+Math.cos(yaw)*s)*scale,dz=(-Math.cos(yaw)*f-Math.sin(yaw)*s)*scale;const steps=Math.max(1,Math.ceil(Math.hypot(dx,dz)/.04));for(let i=0;i<steps;i++){let x=camera.position.x+dx/steps,z=camera.position.z+dz/steps;if(isClear(x,camera.position.z))camera.position.x=x;else recordCollision(x,camera.position.z);if(isClear(camera.position.x,z))camera.position.z=z;else recordCollision(camera.position.x,z);}camera.position.y=1.62;}
@@ -229,8 +225,8 @@ async function start(){
     document.querySelectorAll('[data-move]').forEach(b=>{const k=b.dataset.move;b.addEventListener('pointerdown',e=>{e.preventDefault();held.add(k);handleMovement(.10);b.setPointerCapture(e.pointerId);});for(const ev of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(ev,()=>held.delete(k));});
     document.getElementById('closePhoto').onclick=()=>document.getElementById('photoModal').hidden=true;
 
-    window.roomDebug.renderer=renderer;window.roomDebug.camera=camera;window.roomDebug.scene=scene;window.roomDebug.controls=controls;window.roomDebug.setWarm=setWarm;window.roomDebug.collisionBoxes=colliders;root.updateMatrixWorld(true);const boundsOf=name=>new THREE.Box3().setFromObject(root.getObjectByName(name));const sizeOf=name=>boundsOf(name).getSize(new THREE.Vector3()).toArray();const mattressBounds=boundsOf('床墊'),windowBounds=boundsOf('窗鋁框左'),bathBounds=boundsOf('浴室門板');window.roomDebug.geometry={bedBase:sizeOf('床基座'),bedMattress:sizeOf('床墊'),mattressTop:Math.round(mattressBounds.max.y*1000)/1000,floor:sizeOf('地板'),coffeeTable:sizeOf('茶幾桌面'),windowToBed:mattressBounds.min.z-windowBounds.max.z,windowToBath:bathBounds.min.z-windowBounds.max.z,entryDoorWall:'電視側牆',fridgeCount:root.children.filter(o=>o.name==='單一冰箱').length};
-    comparison=setupSofaComparison({root,scene,camera,controls,bed,desk,coffeeTable:small,bedShadow,deskShadow,tableShadow,colliders,exterior,room:{width:W,back:BACK,bed:MODEL.bed,table:MODEL.coffeeTable},setMode,toast,debug:window.roomDebug});
+    window.roomDebug.renderer=renderer;window.roomDebug.camera=camera;window.roomDebug.scene=scene;window.roomDebug.controls=controls;window.roomDebug.setWarm=setWarm;window.roomDebug.collisionBoxes=colliders;root.updateMatrixWorld(true);const boundsOf=name=>new THREE.Box3().setFromObject(root.getObjectByName(name));const sizeOf=name=>boundsOf(name).getSize(new THREE.Vector3()).toArray();const mattressBounds=boundsOf('床墊'),windowBounds=boundsOf('窗鋁框左'),bathBounds=boundsOf('浴室門板');window.roomDebug.geometry={bedBase:sizeOf('床基座'),bedMattress:sizeOf('床墊'),mattressTop:Math.round(mattressBounds.max.y*1000)/1000,floor:sizeOf('地板'),coffeeTable:sizeOf('胡桃木圓邊桌'),coffeeTableCenter:boundsOf('胡桃木圓邊桌').getCenter(new THREE.Vector3()).toArray(),windowToBed:mattressBounds.min.z-windowBounds.max.z,windowToBath:bathBounds.min.z-windowBounds.max.z,entryDoorWall:'電視側牆',fridgeCount:root.children.filter(o=>o.name==='單一冰箱').length};
+    comparison=setupSofaComparison({root,colliders,room:{width:W}});
     window.roomDebug.comparison=comparison;await comparison.ready();
   }catch(e){window.roomDebug.errors.push(String(e));document.getElementById('loadStatus').textContent='房間載入失敗：'+e.message;document.querySelector('.spinner').hidden=true;console.error(e);}
 }

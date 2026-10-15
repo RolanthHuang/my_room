@@ -30,4 +30,22 @@ for(const id of ['two','corner']){
  results.push({id,widthCm:s.x*100,depthCm:s.z*100,heightCm:s.y*100,seats,armBulge,vertices});
 }
 fs.unlinkSync(bundle);
-console.log(JSON.stringify({passed:true,models:results},null,2));
+const tableBundle=path.join(os.tmpdir(),'my-room-table-'+crypto.randomUUID()+'.cjs');
+esbuild.buildSync({entryPoints:[path.join(root,'src/walnut-table.js')],bundle:true,platform:'node',format:'cjs',outfile:tableBundle,loader:{'.jpg':'dataurl'}});
+const {createWalnutTable,TABLE_SPEC}=require(tableBundle),table=createWalnutTable();
+table.updateMatrixWorld(true);
+const tableBounds=new THREE.Box3().setFromObject(table),tableSize=tableBounds.getSize(new THREE.Vector3());
+for(const actual of tableSize.toArray())assert.ok(Math.abs(actual-.5)<1e-6,'round table must be 50 x 50 x 50 cm');
+assert.ok(Math.abs(tableBounds.min.y)<1e-6,'table feet must meet the floor');
+assert.ok(Math.abs(tableBounds.max.y-TABLE_SPEC.height)<1e-6,'tabletop must reach the stated height');
+assert.ok(Math.abs(tableBounds.min.x+tableBounds.max.x)<1e-6&&Math.abs(tableBounds.min.z+tableBounds.max.z)<1e-6,'table must be centred at its fixed placement origin');
+assert.equal(table.getObjectsByProperty('name','外撇實木桌腳').length,3);
+assert.equal(table.getObjectsByProperty('name','樹形分叉支撐').length,6);
+table.traverse(o=>{if(!o.isMesh)return;for(const attr of Object.values(o.geometry.attributes))for(const value of attr.array)assert.ok(Number.isFinite(value),'table contains invalid geometry');});
+const roomSource=fs.readFileSync(path.join(root,'src/room.js'),'utf8');
+assert.ok(roomSource.includes('x:.95,z:-1.55'),'replacement must retain original table centre');
+for(const removed of ['桌上杯子','桌上書本','茶幾下層木架','茶幾黑鐵腳'])assert.ok(!roomSource.includes(removed),'old table detail remains: '+removed);
+const template=fs.readFileSync(path.join(root,'src/template.html'),'utf8');
+for(const removed of ['bedShift','tableShift','data-placement','deskFollow','dimensionToggle','exportModel','studioToggle'])assert.ok(!template.includes(removed),'retired control remains: '+removed);
+fs.unlinkSync(tableBundle);
+console.log(JSON.stringify({passed:true,models:results,table:{widthCm:tableSize.x*100,depthCm:tableSize.z*100,heightCm:tableSize.y*100,position:{x:.95,z:-1.55},legs:3,forks:6},simplifiedControls:true},null,2));
