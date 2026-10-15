@@ -4,9 +4,11 @@ import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {setupSofaLayout} from './sofa-layout.js';
 import {createWalnutTable, TABLE_SPEC} from './walnut-table.js';
+import {createWallColumns, createCoatStand, COLUMN_SPEC} from './room-fixtures.js';
+import {createWoodenShelf} from './wooden-shelf.js';
 
 // All distances are metres. The bed is measured; room and other furniture are inferred.
-const MODEL={room:{width:4.25,depth:6.18,height:2.65},bed:{length:1.88,width:1.52,baseHeight:.25,mattressHeight:.34,windowGap:1.95,x:1.105,z:.035},wallColumn:{projection:.28,width:.58},coffeeTable:{length:TABLE_SPEC.depth,width:TABLE_SPEC.width,height:TABLE_SPEC.height,x:.95,z:-1.55}};
+const MODEL={room:{width:4.25,depth:6.18,height:2.65},bed:{length:1.88,width:1.52,baseHeight:.25,mattressHeight:.34,windowGap:1.95,x:1.105,z:.035},wallColumn:COLUMN_SPEC,coffeeTable:{length:TABLE_SPEC.depth,width:TABLE_SPEC.width,height:TABLE_SPEC.height,x:.95,z:-1.55}};
 const canvas=document.getElementById('viewport');
 const loader=document.getElementById('loader');
 const scene=new THREE.Scene();
@@ -78,19 +80,17 @@ box('左側天花梁',.22,.29,D,-W/2+.11,H-.145,CENTER,mats.trim,leftWall);
 box('右側天花梁',.22,.29,D,W/2-.11,H-.145,CENTER,mats.trim,rightWall);
 box('窗側天花梁',W,.18,.38,0,H-.09,BACK+.19,mats.trim,backWall);
 box('入口側天花梁',W,.23,.25,0,H-.115,FRONT-.125,mats.trim,frontWall);
-// Shallow structural piers match the recesses visible in the reverse photograph.
-const wallPier=new THREE.Group();wallPier.name='電視側結構柱';root.add(wallPier);
-const pier=MODEL.wallColumn,pierZ=entryLeft-pier.width/2,pierX=-W/2+pier.projection/2;
-box('電視與入口間嵌牆柱',pier.projection,H,pier.width,pierX,H/2,pierZ,mats.wall,wallPier);
-box('嵌牆柱下段灰磚',pier.projection+.004,1,pier.width+.004,pierX,.5,pierZ,mats.gray,wallPier);
-paneling(wallPier,'x',-W/2+pier.projection+.004,pier.width,pierZ);
-for(const z of [pierZ-pier.width/2,pierZ+pier.width/2])box('柱側灰磚收邊',pier.projection,.017,.022,pierX,1.007,z,mats.trim,wallPier);
-obstacle('電視與入口間嵌牆柱',pierX,pierZ,pier.projection,pier.width);
-box('床側前柱',.16,H,.30,W/2-.08,H/2,2.26,mats.wall,rightWall);box('床側前柱下段',.17,1,.31,W/2-.08,.5,2.26,mats.gray,rightWall);
+// Matched structural columns stay visible in the cutaway view.
+const structure=createWallColumns(W,H,mats);root.add(structure.group);
+for(const {group} of Object.values(structure.columns)){
+  const bounds=new THREE.Box3().setFromObject(group),c=bounds.getCenter(new THREE.Vector3()),size=bounds.getSize(new THREE.Vector3());
+  obstacle(group.name,c.x,c.z,size.x,size.z);
+}
 function door(name,x,z,width,height,mat,parent,rotation=0){const g=new THREE.Group();g.name=name+'門組';g.position.set(x,0,z);g.rotation.y=rotation;parent.add(g);box(name+'門框',width+.13,height+.10,.10,0,(height+.10)/2,-.025,material('#39392f',.65),g);box(name+'門板',width,height,.065,0,height/2,-.095,mat,g,.012);for(let y=.4;y<height;y+=.39)box('門板橫接縫',width-.035,.006,.005,0,y,-.132,mats.black,g);sphere('門鎖',.022,.034,.015,width*.35,.97,-.16,mats.metal,g);lineTube([[width*.35,.99,-.17],[width*.35-.10,.99,-.17]],.012,mats.metal,g);if(name==='浴室'){box('浴室門百葉框',width-.08,.32,.008,0,.32,-.132,mats.black,g,.006);for(let y=.19;y<.46;y+=.034)box('浴室門百葉',width-.11,.011,.006,0,y,-.139,mat,g);}}
 door('入口',-W/2-.1275,entryZ,.80,2.04,mats.door,leftWall,-Math.PI/2);door('浴室',bathX,FRONT+.1275,.72,2.02,material('#4b4e46',.72),frontWall);
 box('浴室門檻',.82,.08,.2,.53,.04,FRONT-.18,mats.gray,frontWall);
-box('配電箱',.31,.41,.028,-W/2+pier.projection+.022,1.54,pierZ,mats.white,wallPier,.015).rotation.y=Math.PI/2;
+box('配電箱',.31,.41,.028,-W/2+.022,1.54,2.14,mats.white,leftWall,.015).rotation.y=Math.PI/2;
+const coatStand=createCoatStand(mats);coatStand.position.set(-1.88,0,2.14);root.add(coatStand);contact(-1.88,2.14,.58,.58);obstacle('衣帽架底座',-1.88,2.14,.43,.43);
 const windowFrameMat=material('#333b38',.32,.58);
 box('窗鋁框左',.045,windowHeight,.07,windowCenter-windowWidth/2,.06+windowHeight/2,BACK-.035,windowFrameMat,backWall);
 box('窗鋁框右',.045,windowHeight,.07,windowCenter+windowWidth/2,.06+windowHeight/2,BACK-.035,windowFrameMat,backWall);
@@ -122,7 +122,7 @@ const olive=clothMat('#7b775d');const shirt=clothPlane(.43,.29,b.x-.15,.611,b.z-
 const bedShadow=contact(b.x,b.z,b.length+.5,b.width+.5);obstacle('床',b.x,b.z,b.length,b.width);
 // Both replacement sofas are installed by the fixed furniture layout.
 // Desk sits beside the headboard. No newly added clutter from the reverse photo.
-const desk=new THREE.Group();root.add(desk);const dx=1.82,dz=1.315;
+const desk=new THREE.Group();root.add(desk);const dx=1.82,dz=1.315,deskOffset=-COLUMN_SPEC.projection-.015;desk.position.x=deskOffset;
 box('書桌桌面',.60,.038,.93,dx,.77,dz,mats.wood,desk,.009);
 for(const z of [dz-.44,dz+.44])box('書桌側板',.53,.75,.035,dx,.375,z,mats.wood,desk,.008);
 box('書桌背板',.025,.44,.85,2.08,.56,dz,mats.woodDark,desk);box('書桌抽屜',.48,.13,.79,dx,.675,dz,mats.wood,desk,.007);
@@ -133,7 +133,7 @@ for(const x of [cx-.155,cx+.155])for(const z of [cz-.155,cz+.155])box('椅腳',.
 box('椅背',.045,.39,.37,cx+.165,.63,cz,mats.wood,desk,.012);
 const coatMat=clothMat('#232826');box('椅背上的黑衣',.11,.54,.39,cx+.15,.64,cz,coatMat,desk,.04);sphere('黑衣袖褶',.05,.25,.07,cx+.06,.57,cz+.17,coatMat,desk);
 box('桌上筆記本',.16,.016,.20,1.78,.804,1.125,mats.white,desk,.002);box('桌面小物',.055,.06,.05,1.90,.82,1.535,mats.black,desk,.007);
-const deskShadow=contact(dx,dz,.95,1.22);obstacle('書桌',dx,dz,.6,.94);obstacle('椅子',cx,cz,.42,.40);
+const deskShadow=contact(dx+deskOffset,dz,.95,1.22);obstacle('書桌',dx+deskOffset,dz,.6,.94);obstacle('椅子',cx+deskOffset,cz,.42,.40);
 const wardrobe=new THREE.Group();root.add(wardrobe);const wx=1.81,wz=2.83;
 box('衣櫃主體',.60,2.13,1.18,wx,1.065,wz,mats.woodDark,wardrobe,.012);
 for(const z of [wz-.294,wz+.294])box('衣櫃門',.035,1.36,.578,wx-.32,1.445,z,mats.wood,wardrobe,.005);
@@ -165,6 +165,10 @@ fridge(-1.61,-2.31,.57,1.24,.53,'#a5aca6');
 // The 50 cm walnut side table occupies the original coffee table's centre.
 const ct=MODEL.coffeeTable,small=createWalnutTable();small.position.set(ct.x,0,ct.z);root.add(small);
 obstacle('茶幾',ct.x,ct.z,ct.width,ct.length);contact(ct.x,ct.z,ct.width+.20,ct.length+.20);
+// The user's three-tier shelf stands beside the bed as a table; geometry keeps its original scale.
+const bedsideShelf=createWoodenShelf();bedsideShelf.position.set(.42,0,1.08);root.add(bedsideShelf);
+const shelfBounds=new THREE.Box3().setFromObject(bedsideShelf),shelfSize=shelfBounds.getSize(new THREE.Vector3());
+obstacle('床邊三層木架',.42,1.08,shelfSize.x,shelfSize.z);contact(.42,1.08,.75,.70);
 // Recessed ceiling fixtures and lighting.
 const fixtures=[];const ceilingLights=[];
 const lampMat=new THREE.MeshBasicNodeMaterial({color:'#faf3d9'});
@@ -218,7 +222,7 @@ async function start(){
     document.querySelectorAll('[data-move]').forEach(b=>{const k=b.dataset.move;b.addEventListener('pointerdown',e=>{e.preventDefault();held.add(k);handleMovement(.10);b.setPointerCapture(e.pointerId);});for(const ev of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(ev,()=>held.delete(k));});
     document.getElementById('closePhoto').onclick=()=>document.getElementById('photoModal').hidden=true;
 
-    window.roomDebug.renderer=renderer;window.roomDebug.camera=camera;window.roomDebug.scene=scene;window.roomDebug.controls=controls;window.roomDebug.setWarm=setWarm;window.roomDebug.collisionBoxes=colliders;root.updateMatrixWorld(true);const boundsOf=name=>new THREE.Box3().setFromObject(root.getObjectByName(name));const sizeOf=name=>boundsOf(name).getSize(new THREE.Vector3()).toArray();const mattressBounds=boundsOf('床墊'),windowBounds=boundsOf('窗鋁框左'),bathBounds=boundsOf('浴室門板');window.roomDebug.geometry={bedBase:sizeOf('床基座'),bedMattress:sizeOf('床墊'),mattressTop:Math.round(mattressBounds.max.y*1000)/1000,floor:sizeOf('地板'),wallColumn:{size:sizeOf('電視與入口間嵌牆柱'),photoEstimated:true},coffeeTable:sizeOf('胡桃木圓邊桌'),coffeeTableCenter:boundsOf('胡桃木圓邊桌').getCenter(new THREE.Vector3()).toArray(),windowToBed:mattressBounds.min.z-windowBounds.max.z,windowToBath:bathBounds.min.z-windowBounds.max.z,entryDoorWall:'電視側牆',fridgeCount:root.children.filter(o=>o.name==='單一冰箱').length};
+    window.roomDebug.renderer=renderer;window.roomDebug.camera=camera;window.roomDebug.scene=scene;window.roomDebug.controls=controls;window.roomDebug.setWarm=setWarm;window.roomDebug.collisionBoxes=colliders;root.updateMatrixWorld(true);const boundsOf=name=>new THREE.Box3().setFromObject(root.getObjectByName(name));const sizeOf=name=>boundsOf(name).getSize(new THREE.Vector3()).toArray();const mattressBounds=boundsOf('床墊'),windowBounds=boundsOf('窗鋁框左'),bathBounds=boundsOf('浴室門板');window.roomDebug.geometry={bedBase:sizeOf('床基座'),bedMattress:sizeOf('床墊'),mattressTop:Math.round(mattressBounds.max.y*1000)/1000,floor:sizeOf('地板'),wallColumns:{tv:{size:sizeOf('電視與入口間嵌牆柱'),center:boundsOf('電視與入口間嵌牆柱').getCenter(new THREE.Vector3()).toArray()},desk:{size:sizeOf('小桌子後方嵌牆柱'),center:boundsOf('小桌子後方嵌牆柱').getCenter(new THREE.Vector3()).toArray()},photoEstimated:true},coatStand:{size:sizeOf('門旁木製衣帽架'),center:boundsOf('門旁木製衣帽架').getCenter(new THREE.Vector3()).toArray(),photoEstimated:true},bedsideShelf:{size:sizeOf('床邊三層木架'),center:boundsOf('床邊三層木架').getCenter(new THREE.Vector3()).toArray(),photoEstimated:true},deskTop:{size:sizeOf('書桌桌面'),center:boundsOf('書桌桌面').getCenter(new THREE.Vector3()).toArray()},coffeeTable:sizeOf('胡桃木圓邊桌'),coffeeTableCenter:boundsOf('胡桃木圓邊桌').getCenter(new THREE.Vector3()).toArray(),windowToBed:mattressBounds.min.z-windowBounds.max.z,windowToBath:bathBounds.min.z-windowBounds.max.z,entryDoorWall:'電視側牆',fridgeCount:root.children.filter(o=>o.name==='單一冰箱').length};
     comparison=setupSofaLayout({root,colliders,room:{width:W,column:MODEL.wallColumn}});
     window.roomDebug.geometry.sofas=comparison.geometry;
     window.roomDebug.comparison=comparison;await comparison.ready();

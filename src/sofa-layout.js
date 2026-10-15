@@ -11,8 +11,8 @@ export function createSofaLayout(roomWidth,columnProjection=.28){
   two.position.set(roomWidth/2-.03-SOFA_SPECS.two.depth/2,0,-1.66);
   two.rotation.y=-Math.PI/2;
   // The corner's open +X/+Z sides face the bed; its backs face the wall and entry.
-  // Keep the former trolley's depth, with 3 cm clearance in front of the wall column.
-  corner.position.set(-roomWidth/2+columnProjection+.03+SOFA_SPECS.corner.depth/2,0,1.83);
+  // Keep the former trolley's depth, with space for the coat stand in the door recess.
+  corner.position.set(-roomWidth/2+columnProjection+.20+.03+SOFA_SPECS.corner.depth/2,0,1.83);
   corner.rotation.y=Math.PI/2;
   holder.add(two,corner);holder.updateMatrixWorld(true);
   return {holder,models};
